@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeDrive AI - 管理者コントロールセンター</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(239, 68, 68, 0.05) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+        }
+        
+        /* Modal dialog custom styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(3, 7, 18, 0.85);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-content {
+            max-width: 500px;
+            width: 100%;
+            padding: 24px;
+            position: relative;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+        @keyframes modalFadeIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- 管理用ヘッダー -->
+        <header class="admin-header">
+            <div>
+                <h1 style="font-family: var(--font-display); font-weight: 800; font-size: 28px;">
+                    🛡️ SafeDrive <span style="color: var(--primary);">AI Control</span>
+                </h1>
+                <p style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">
+                    運行管理者ダッシュボード • リアルタイム安全運行エージェント監視
+                </p>
+            </div>
+            
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <a href="index.html" class="status-badge" style="text-decoration: none; padding: 10px 18px; color: var(--text-primary); background: rgba(139, 92, 246, 0.1); border-color: var(--primary); font-weight: 700;">
+                    📱 ドライバー画面(スマホ)を開く
+                </a>
+                <button id="resetLogsBtn" class="status-badge" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #fca5a5; padding: 10px 14px; cursor: pointer;">
+                    🔄 データを初期化
+                </button>
+            </div>
+        </header>
+
+        <!-- 💡 管理者用デモガイド（アコーディオン） -->
+        <div class="card glass-panel demo-guide-card" id="demoGuideCard" style="margin-bottom: 24px; border-color: rgba(139, 92, 246, 0.4); padding: 14px;">
+            <div class="demo-guide-header" id="demoGuideHeader" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;">
+                <span style="font-size: 13px; font-weight: 800; color: #a78bfa; display: flex; align-items: center; gap: 6px;">
+                    <span class="pulse-icon">💡</span> 審査員用・管理者デモ実演手順（開閉）
+                </span>
+                <span id="demoGuideArrow" style="font-size: 12px; color: var(--text-muted); transition: transform 0.3s;">▼</span>
+            </div>
+            <div class="demo-guide-content" id="demoGuideContent" style="display: none; margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px;">
+                <div style="font-size: 11px; color: var(--text-secondary); line-height: 1.5; text-align: left;">
+                    <p style="margin-bottom: 6px; font-weight: 700; color: var(--text-primary);">本ダッシュボードはドライバー画面と連動し、2秒ごとに自動更新（リアルタイム同期）されます。</p>
+                    <p style="margin-bottom: 8px; font-weight: 700; color: var(--text-primary);">実演手順:</p>
+                    <ol style="padding-left: 14px; display: flex; flex-direction: column; gap: 6px;">
+                        <li><strong>1. 📱 ドライバー画面で打刻</strong><br>
+                            「<a href="index.html" target="_blank" style="color: var(--primary); text-decoration: underline; font-weight: 700;">ドライバー画面</a>」を開き、「🏢 業務運行 (要点呼承認)」を選択。睡眠スコアなどを入力してチェックインします。
+                        </li>
+                        <li><strong>2. 📥 自動アップデートの確認</strong><br>
+                            本画面に戻ると、<strong>一切画面リロードなしで即座に</strong>新しい打刻ログが一番上に追加され、オレンジ色の「要点呼承認」または「対面点呼対象」バッジが表示されます。
+                        </li>
+                        <li><strong>3. 📸 エビデンスの確認</strong><br>
+                            「エビデンス画像」列のサムネイル画像をクリックすると、カメラで撮影されたアルコールチェッカーの検知エビデンス、GPS位置座標、打刻時刻、AIメッセージの詳細な内訳が確認できます。
+                        </li>
+                        <li><strong>4. 🔓 オン遠隔点呼の承認</strong><br>
+                            バッジの横にある緑色の **「☑️ 点呼承認」** ボタンをクリック。バッジが緑色の「点呼完了」に変化します。<br>
+                            この瞬間、ドライバー側の画面に戻ると、<strong>あちらもリロードなしでリアルタイムに「運行許可済 🔓」へ切り替わり、エンジンが解錠されます！</strong>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- メトリクス集計パネル -->
+        <div class="grid-3" style="margin-bottom: 32px;">
+            <div class="card glass-panel stats-card">
+                <div>
+                    <span class="stat-desc">本日の総打刻ドライバー</span>
+                    <div class="stat-num" id="totalChecksCount">3</div>
+                </div>
+                <span style="font-size: 32px;">👥</span>
+            </div>
+
+            <div class="card glass-panel stats-card" style="border-color: rgba(245, 158, 11, 0.2);">
+                <div>
+                    <span class="stat-desc">要警戒/アラート (AI判定)</span>
+                    <div class="stat-num" id="alertChecksCount" style="color: var(--warning);">1</div>
+                </div>
+                <span style="font-size: 32px;">⚠️</span>
+            </div>
+
+            <div class="card glass-panel stats-card" style="border-color: rgba(16, 185, 129, 0.2);">
+                <div>
+                    <span class="stat-desc">アルコール検知件数</span>
+                    <div class="stat-num" id="alcoholChecksCount" style="color: var(--success);">0</div>
+                </div>
+                <span style="font-size: 32px;">🧪</span>
+            </div>
+        </div>
+
+        <!-- テーブルとフィルタセクション -->
+        <div class="card glass-panel" style="padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-tab active" data-filter="all">全ドライバー</button>
+                    <button class="btn-tab" data-filter="warning">要警戒 (イエロー以上)</button>
+                    <button class="btn-tab" data-filter="success">良好 (グリーン)</button>
+                </div>
+                <div style="font-size: 13px; color: var(--text-muted);">
+                    ⚡ 自動更新: 2秒ごと
+                </div>
+            </div>
+
+            <!-- ログテーブル -->
+            <div class="log-table-container">
+                <table class="log-table" id="logsTable">
+                    <thead>
+                        <tr>
+                            <th>ドライバーID</th>
+                            <th>打刻時間</th>
+                            <th>アルコール (OCR値)</th>
+                            <th>睡眠スコア</th>
+                            <th>自覚疲労</th>
+                            <th>WBGT (暑さ指数)</th>
+                            <th>エビデンス画像</th>
+                            <th>AI運行指示フィードバック</th>
+                            <th>ステータス</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody">
+                        <!-- 動的生成 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- エビデンス確認用ポップアップモーダル -->
+    <div class="modal" id="evidenceModal">
+        <div class="card glass-panel modal-content">
+            <span class="modal-close" id="modalCloseBtn">&times;</span>
+            <h3 style="font-family: var(--font-display); font-weight: 700; margin-bottom: 16px; font-size: 18px;" id="modalDriverId">
+                エビデンス詳細
+            </h3>
+            
+            <div style="width: 100%; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-color); background: #000; margin-bottom: 16px;">
+                <img id="modalEvidenceImage" src="" alt="OCR Evidence" style="width: 100%; display: block; object-fit: contain;">
+            </div>
+
+            <div class="meta-row">
+                <span>OCR抽出アルコール:</span>
+                <strong style="color: var(--success); font-family: var(--font-display); font-size: 16px;">0.00 mg/L (適合済)</strong>
+            </div>
+            
+            <div class="meta-row" style="margin-top: 6px;">
+                <span>打刻座標 (GPS):</span>
+                <span class="meta-val" id="modalGps">-</span>
+            </div>
+
+            <div style="margin-top: 16px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-sm); font-size: 13px; color: var(--text-secondary); line-height: 1.5;" id="modalAiMsg">
+                -
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

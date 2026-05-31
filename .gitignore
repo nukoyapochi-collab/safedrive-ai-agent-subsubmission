@@ -1,0 +1,45 @@
+# ============================================
+# SafeDrive AI Agent - .gitignore
+# ============================================
+
+# === Azure Functions ===
+local.settings.json
+
+# === Node.js ===
+node_modules/
+dist/
+package-lock.json
+
+# === Environment & Secrets ===
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.p12
+
+# === Documentation assets (not needed in repo) ===
+# docs/
+zenn_article_draft.md
+zenn_article_draft_rewrite.md
+
+# === IDE & Editor ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# === OS files ===
+.DS_Store
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# === Build & Temp ===
+*.log
+npm-debug.log*
+.cache/
+tmp/
+temp/
+

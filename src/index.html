@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>安全運行・健康管理システム - 運行開始打刻</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- 初回紐付けログイン画面 (ID登録未設定時のみ表示) -->
+    <div class="container" id="loginContainer" style="display: none;">
+        <header>
+            <div class="logo">
+                <span>🛡️</span>Safe<span>Drive</span> AI
+            </div>
+        </header>
+        <div class="card glass-panel" style="margin-top: 40px; padding: 32px 24px;">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <span style="font-size: 48px; display: block; margin-bottom: 16px;">🔑</span>
+                <h2 style="font-family: var(--font-display); font-weight: 800; font-size: 22px; margin-bottom: 8px; background: linear-gradient(135deg, #fff 0%, var(--text-secondary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ドライバー端末紐付け</h2>
+                <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">本システムをご利用いただく前に、会社から配布された【社員コード】を入力して端末の登録を行ってください。</p>
+            </div>
+            <form id="loginForm" onsubmit="event.preventDefault();">
+                <div class="slider-group">
+                    <div class="slider-label" style="justify-content: center; font-weight: 600; color: var(--primary);">社員コード (ハッカソンデモ用: 1002)</div>
+                    <input type="text" id="employeeCode" style="width: 100%; padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: var(--text-primary); font-family: var(--font-sans); outline: none; font-size: 18px; text-align: center; letter-spacing: 0.2em; font-weight: 700; border-color: rgba(139, 92, 246, 0.3);" placeholder="1002">
+                </div>
+                <div id="loginErrorMsg" style="display: none; padding: 12px; border-radius: var(--radius-sm); background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: #fca5a5; font-size: 12px; text-align: center; margin-bottom: 16px;">
+                    ⚠️ 社員コードが正しくありません。
+                </div>
+                <button type="button" id="loginSubmitBtn" class="capture-btn">
+                    紐付けを完了して出発 🚀
+                </button>
+            </form>
+        </div>
+        <footer style="margin-top: 48px; text-align: center; font-size: 12px; color: var(--text-muted);">
+            © 2026 Agentic AI Hackathon MVP Project
+        </footer>
+    </div>
+
+    <!-- メインアプリケーション画面 -->
+    <div class="container" id="appContainer" style="display: none;">
+        <!-- ヘッダー -->
+        <header>
+            <div class="logo">
+                <span>🛡️</span>Safe<span>Drive</span> AI
+            </div>
+            <div class="status-badge">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">GPS同期中</span>
+            </div>
+        </header>
+
+        <!-- 切替フローティングボタン（デモ用） -->
+        <div class="card glass-panel" style="padding: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 13px; color: var(--text-secondary);">⚙️ デモ表示モード切替:</span>
+            <a href="admin.html" style="color: var(--primary); font-size: 13px; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 4px;">
+                管理者ダッシュボード ➔
+            </a>
+        </div>
+
+        <!-- 💡 審査員用デモガイド（アコーディオン） -->
+        <div class="card glass-panel demo-guide-card" id="demoGuideCard" style="margin-bottom: 20px; border-color: rgba(139, 92, 246, 0.4); padding: 14px;">
+            <div class="demo-guide-header" id="demoGuideHeader" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;">
+                <span style="font-size: 13px; font-weight: 800; color: #a78bfa; display: flex; align-items: center; gap: 6px;">
+                    <span class="pulse-icon">💡</span> 審査員用3分デモツアー手順（開閉）
+                </span>
+                <span id="demoGuideArrow" style="font-size: 12px; color: var(--text-muted); transition: transform 0.3s;">▼</span>
+            </div>
+            <div class="demo-guide-content" id="demoGuideContent" style="display: none; margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px;">
+                <div style="font-size: 11px; color: var(--text-secondary); line-height: 1.5; text-align: left;">
+                    <p style="margin-bottom: 8px; font-weight: 700; color: var(--text-primary);">審査員様へ: 以下の4ステップで本システムのすべての価値をご体験いただけます！</p>
+                    <ol style="padding-left: 14px; display: flex; flex-direction: column; gap: 6px;">
+                        <li><strong>1. 🏠 通勤安全宣言 (監視感の緩和)</strong><br>
+                            カテゴリーで「🏠 通勤・任意 (自主ケア)」を選択してチェックイン ➔ 管理者承認を自動スルーし、AIが優しく見守るグリーン状態を確認。
+                        </li>
+                        <li><strong>2. 🚨 隠れ疲労のAI検知 (能動的ブレーキ)</strong><br>
+                            「☀️ 出発チェック」へ戻り、「🏢 業務運行」を選択。スライダーで睡眠スコアを「48点以下」にするか、自覚疲労を「重い」にしてチェックイン ➔ AIが危険を検知し「レッド (運行停止)」を警告するのを確認！
+                        </li>
+                        <li><strong>3. 🔓 リアルタイム遠隔点呼承認 (ガチ連動)</strong><br>
+                            「🏢 業務運行」で睡眠スコア80点（良好）のままチェックイン。画面が「点呼承認待ち」の黄色ロック状態になります。
+                        </li>
+                        <li><strong>4. 💻 管理者承認でアンロック (本物の同期)</strong><br>
+                            別タブで「<a href="admin.html" target="_blank" style="color: var(--primary); text-decoration: underline; font-weight: 700;">管理者ダッシュボード</a>」を開き、DRV-1002の「☑️ 点呼承認」をクリック ➔ スマホ画面に戻ると、<strong>一切リロードなしで即時に「運行許可済 🔓」へ切り替わる魔法</strong>を体験！
+                        </li>
+                    </ol>
+                    <div style="margin-top: 10px; padding: 6px 10px; background: rgba(0, 176, 185, 0.1); border-radius: 6px; border: 1px solid rgba(0, 176, 185, 0.2); font-size: 10px; text-align: center; color: #2dd4bf;">
+                        ⌚ <strong>バイタル連携機能</strong>: 「実機連携」タブに切り替えると、Fitbit OAuth認証画面やApple Health XMLインポートの高度なシミュレートもご体験いただけます！
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 二相フロー切り替えタブ -->
+        <div class="card glass-panel" style="padding: 6px; margin-bottom: 20px;">
+            <div class="tap-grid" id="modeTabs" style="margin-bottom: 0;">
+                <button type="button" class="tap-btn selected" id="tabDeparture" data-mode="departure">☀️ 出発チェック</button>
+                <button type="button" class="tap-btn" id="tabReturn" data-mode="return">🌙 帰着チェック</button>
+            </div>
+        </div>
+
+        <!-- 登録済ドライバー情報表示 -->
+        <div class="card glass-panel" id="driverInfoCard">
+            <div class="section-title">
+                <span>👤</span>紐付け済ドライバー
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 13px; color: var(--text-secondary);">認証ドライバーコード:</span>
+                <span id="displayDriverId" class="badge badge-green" style="font-size: 13px; font-family: var(--font-display); font-weight: 700; padding: 6px 12px; border-radius: 100px;">DRV-1002</span>
+            </div>
+            <div style="margin-top: 10px; text-align: right;">
+                <a href="#" id="resetRegistrationBtn" style="font-size: 11px; color: var(--danger); text-decoration: none; font-weight: 600;">🔒 端末の紐付けを解除する</a>
+            </div>
+        </div>
+
+        <form id="checkinForm" onsubmit="event.preventDefault();">
+            <!-- 運行種別設定（乗務前/出発時のみ表示） -->
+            <div id="runTypeGroup" class="card glass-panel">
+                <div class="section-title">
+                    <span>🚗</span>運行カテゴリー
+                </div>
+                <div class="slider-label" style="margin-bottom: 8px;">乗務の目的を選択してください</div>
+                <div class="tap-grid" id="runTypeGrid">
+                    <button type="button" class="tap-btn selected" data-value="業務">🏢 業務運行 (要点呼承認)</button>
+                    <button type="button" class="tap-btn" data-value="通勤">🏠 通勤・任意 (自主ケア)</button>
+                </div>
+                <input type="hidden" id="runType" value="業務">
+            </div>
+
+            <!-- 目的地入力（乗務前/出発時のみ表示） -->
+            <div id="destinationGroup" class="card glass-panel">
+                <div class="section-title">
+                    <span>📍</span>本日の目的地
+                </div>
+                <div class="slider-group" style="margin-bottom: 0;">
+                    <input type="text" id="destination" style="width: 100%; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: var(--text-primary); font-family: var(--font-sans); outline: none;" placeholder="例: 大阪本社、東京流通センター">
+                </div>
+            </div>
+
+            <!-- 📋 運行計画書（PDF/画像）アップロードカード（業務運行選択時のみ表示） -->
+            <div id="scheduleUploadGroup" class="card glass-panel" style="display: none; margin-bottom: 20px;">
+                <div class="section-title">
+                    <span>📋</span>運行計画書のAI自動読み込み
+                </div>
+                <div class="slider-label" style="margin-bottom: 8px;">エクセルや紙の運行指示書・スケジュール表（PDF/画像）をアップロードしてください。AIが配送先とリスクを自動解析します。</div>
+                
+                <div id="scheduleDropzone" class="import-dropzone" style="border-style: dashed; border-color: rgba(139, 92, 246, 0.4); padding: 18px; text-align: center; cursor: pointer; border-radius: var(--radius-sm); background: rgba(255, 255, 255, 0.01); transition: all 0.3s;">
+                    <span style="font-size: 24px; display: block; margin-bottom: 6px;">📄</span>
+                    <p style="font-size: 11px; font-weight: 600; color: var(--text-primary); margin: 0;">運行計画書 (PDF / 画像) をドラッグ＆ドロップ</p>
+                    <p style="font-size: 9px; color: var(--text-muted); margin-top: 4px; margin-bottom: 0;">またはここをクリックしてファイルを選択</p>
+                    <input type="file" id="scheduleFileInput" style="display: none;" accept="image/*,.pdf">
+                </div>
+                
+                <div id="scheduleSyncStatus" class="badge badge-green" style="display: none; margin-top: 10px; width: 100%; text-align: center; justify-content: center; font-size: 10px; padding: 6px;">
+                    🟢 運行計画書スキャン完了！4拠点の配送先を自動展開しました。
+                </div>
+            </div>
+
+            <!-- 📋 配送コース特性（運行計画）カード（業務運行選択時のみ表示） -->
+            <div id="routeProfileGroup" class="card glass-panel" style="display: none;">
+                <div class="section-title">
+                    <span>📋</span>配送コース特性 (運行計画)
+                </div>
+                <div class="slider-label" style="margin-bottom: 8px;">走行ルートの主な環境特性を選択してください（任意）</div>
+                <div class="tap-grid" id="routeProfileGrid">
+                    <button type="button" class="tap-btn selected" data-value="一般">🌐 一般・自動推測</button>
+                    <button type="button" class="tap-btn" data-value="住宅街">🏙️ 住宅街・戸別配送</button>
+                    <button type="button" class="tap-btn" data-value="高速幹線">🛣️ 高速幹線・長距離</button>
+                    <button type="button" class="tap-btn" data-value="山間山道">🏔️ 山間山道・急カーブ</button>
+                    <button type="button" class="tap-btn" data-value="工業地帯">🏭 臨海港湾・重交通</button>
+                </div>
+                <input type="hidden" id="routeProfile" value="一般">
+            </div>
+
+            <!-- 🚗 出発前車両点検カード（業務運行選択時のみ表示） -->
+            <div id="vehicleCheckGroup" class="card glass-panel" style="display: none; position: relative;">
+                <div class="section-title" style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span>🚗</span>出発前日常点検
+                    </div>
+                    <!-- ❓ 吹き出しヘルプツールチップ -->
+                    <div style="position: relative; display: inline-block;">
+                        <span id="vehicleHelpIcon" style="cursor: pointer; font-size: 11px; background: rgba(255,255,255,0.08); width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: var(--primary); border: 1px solid rgba(139,92,246,0.3); font-weight: bold;">?</span>
+                        <div id="vehicleHelpTooltip" class="glass-panel" style="display: none; position: absolute; bottom: 28px; right: 0; width: 260px; padding: 14px; border-radius: var(--radius-sm); border: 1px solid rgba(139,92,246,0.4); background: rgba(15,23,42,0.96); box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 100; font-size: 11px; line-height: 1.6; color: var(--text-secondary); backdrop-filter: blur(10px);">
+                            <div style="font-weight: 800; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
+                                <span>📋</span>日常点検・必須チェック項目
+                            </div>
+                            <ul style="padding-left: 12px; margin: 0; display: flex; flex-direction: column; gap: 6px; list-style-type: none;">
+                                <li>🛑 <strong>ブレーキ</strong>: 踏み残りがあるか、効きは十分か</li>
+                                <li>🛞 <strong>タイヤ</strong>: 空気圧は適正か、亀裂や偏摩耗はないか</li>
+                                <li>💡 <strong>灯火・反射器</strong>: ウインカー・制動灯が正しく点灯するか</li>
+                                <li>💧 <strong>エンジン・液類</strong>: オイル・冷却水・ウォッシャー液量</li>
+                            </ul>
+                            <div style="margin-top: 8px; font-size: 9px; color: var(--text-muted); text-align: right; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 4px;">
+                                ※道路運送車両法 第47条の2に基づく日常点検要件
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px; margin-top: 12px; align-items: center;">
+                    <div class="slider-group" style="margin-bottom: 0;">
+                        <div class="slider-label" style="font-size: 11px; margin-bottom: 4px;">出発時メーター (km)</div>
+                        <input type="number" id="odometer" value="124580" style="width: 100%; padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: var(--text-primary); font-family: var(--font-sans); outline: none; font-size: 14px; font-weight: bold; border-color: rgba(139,92,246,0.1);">
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; justify-content: flex-end; height: 100%;">
+                        <div class="slider-label" style="font-size: 11px; margin-bottom: 4px; visibility: hidden;">点検</div>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); padding: 8px 10px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 600; justify-content: center; height: 38px; border-color: rgba(16,185,129,0.2);">
+                            <input type="checkbox" id="vehicleInspection" checked style="accent-color: var(--success); width: 15px; height: 15px; cursor: pointer;">
+                            <span style="color: var(--text-primary);">点検異常なし 🟢</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 帰着専用お疲れ様＆ヒヤリハット報告（乗務後/帰着時のみ表示） -->
+            <div id="returnGroup" class="card glass-panel" style="display: none;">
+                <div style="text-align: center; margin-bottom: 20px; padding: 8px;">
+                    <span style="font-size: 36px; display: block; margin-bottom: 8px;">🍵</span>
+                    <h3 style="font-family: var(--font-display); font-weight: 700; color: var(--success); margin-bottom: 6px; font-size: 16px;">乗務お疲れ様でした！</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">無事に目的地に到着し、安全に帰着いただいたことに感謝します。本日の運行状況を報告してください。</p>
+                </div>
+                
+                <div class="section-title">
+                    <span>⚠️</span>安全報告
+                </div>
+                <div class="slider-label" style="margin-bottom: 8px;">運転中のヒヤリハットの有無</div>
+                <div class="tap-grid" id="nearMissGrid">
+                    <button type="button" class="tap-btn selected" data-value="なし">なし (0回)</button>
+                    <button type="button" class="tap-btn" data-value="1〜2回">1〜2回</button>
+                    <button type="button" class="tap-btn" data-value="3回以上">3回以上</button>
+                </div>
+                <input type="hidden" id="nearMissCount" value="なし">
+
+                <!-- 📋 帰着報告書（PDF/画像）アップロードカード -->
+                <div id="returnReportUploadGroup" style="margin-top: 20px; margin-bottom: 20px;">
+                    <div class="slider-label" style="margin-bottom: 8px; font-weight: 600; color: var(--success);">📋 帰着報告書・手書き日報のAI自動スキャン</div>
+                    <div id="returnReportDropzone" class="import-dropzone" style="border-style: dashed; border-color: rgba(16, 185, 129, 0.4); padding: 18px; text-align: center; cursor: pointer; border-radius: var(--radius-sm); background: rgba(255, 255, 255, 0.01); transition: all 0.3s;">
+                        <span style="font-size: 24px; display: block; margin-bottom: 6px;">📝</span>
+                        <p style="font-size: 11px; font-weight: 600; color: var(--text-primary); margin: 0;">帰着報告書・日報 (PDF / 画像) をドラッグ＆ドロップ</p>
+                        <p style="font-size: 9px; color: var(--text-muted); margin-top: 4px; margin-bottom: 0;">またはここをクリックしてファイルを選択</p>
+                        <input type="file" id="returnReportFileInput" style="display: none;" accept="image/*,.pdf">
+                    </div>
+                    <div id="returnReportSyncStatus" class="badge badge-green" style="display: none; margin-top: 10px; width: 100%; text-align: center; justify-content: center; font-size: 10px; padding: 6px;">
+                        🟢 帰着報告書スキャン完了！ヒヤリハットと経路変更（迂回情報）を抽出しました。
+                    </div>
+                </div>
+
+                <!-- AI抽出情報編集欄 -->
+                <div class="slider-group" style="margin-top: 16px; margin-bottom: 0;">
+                    <div class="slider-label">📝 帰着報告詳細（AI自動スキャン結果 / 編集可）</div>
+                    <textarea id="nearMissDetail" style="width: 100%; height: 70px; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); color: var(--text-primary); font-family: var(--font-sans); outline: none; font-size: 12px; resize: none;" placeholder="例: 道路工事のため迂回ルート（新宿〜千代田）を走行。四ツ谷付近で歩行者の急な飛び出しあり。"></textarea>
+                </div>
+            </div>
+
+            <!-- バイタルデータ連携（乗務前/出発時のみ表示） -->
+            <div id="vitalGroup" class="card glass-panel">
+                <div class="section-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span>⌚</span>バイタルデータ連携
+                    </div>
+                    <div class="vital-toggle-container">
+                        <button type="button" class="vital-toggle-btn active" id="btnVitalManual">🎛️ デモ</button>
+                        <button type="button" class="vital-toggle-btn" id="btnVitalDevice">⌚ 実機連携</button>
+                    </div>
+                </div>
+                
+                <!-- 手動デモコンテナ (既存のスライダー) -->
+                <div id="vitalManualContainer">
+                    <div class="slider-group">
+                        <div class="slider-label">
+                            <span>睡眠スコア (昨夜)</span>
+                            <span class="slider-val" id="sleepScoreVal">82</span>
+                        </div>
+                        <input type="range" id="sleepScore" min="10" max="100" value="82" class="slider-input">
+                    </div>
+
+                    <div class="slider-group" style="margin-bottom: 0;">
+                        <div class="slider-label">
+                            <span>疲労指数 (HRVストレス比)</span>
+                            <span class="slider-val" id="stressVal" style="color: var(--success)">低 (良好)</span>
+                        </div>
+                        <input type="range" id="stressScore" min="10" max="100" value="28" class="slider-input">
+                    </div>
+                </div>
+
+                <!-- 実機連携コンテナ (初期非表示) -->
+                <div id="vitalDeviceContainer" style="display: none;">
+                    <div class="device-sync-card">
+                        <div class="device-status-row">
+                            <span style="font-size: 13px; color: var(--text-secondary);">デバイス接続状況:</span>
+                            <span id="deviceSyncBadge" class="badge badge-yellow">⚠️ 未連携 (デモ用)</span>
+                        </div>
+                        <div id="deviceSyncInfo" style="margin-top: 12px; margin-bottom: 16px; font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+                            ウェアラブルデバイス（Fitbit / Apple Watch等）のバイタルデータをAPIまたはファイル経由で本システムにガチ同期します。
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <button type="button" id="fitbitConnectBtn" class="capture-btn" style="background: linear-gradient(135deg, #00b0b9 0%, #00828a 100%); font-size: 13px; padding: 12px; box-shadow: 0 4px 15px rgba(0, 176, 185, 0.25);">
+                                ⚡ FitbitアカウントとOAuth認証連携
+                            </button>
+                            
+                            <div class="import-divider">
+                                <span>または</span>
+                            </div>
+                            
+                            <div id="appleHealthDropzone" class="import-dropzone">
+                                <span>📂</span>
+                                <p style="font-size: 12px; font-weight: 600; margin-top: 4px;">Apple Health (ヘルスケア) XML/JSON のインポート</p>
+                                <p style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">ファイルをここにドラッグ＆ドロップするかファイルを選択</p>
+                                <input type="file" id="appleHealthFileInput" style="display: none;" accept=".xml,.json,.txt">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 体感自己評価グリッド（乗務前/出発時のみ表示） -->
+            <div id="manualConditionGroup" class="card glass-panel">
+                <div class="section-title">
+                    <span>✍️</span>体感コンディション（手入力補完）
+                </div>
+                
+                <div class="slider-label" style="margin-bottom: 8px;">睡眠の実感</div>
+                <div class="tap-grid" id="sleepGrid">
+                    <button type="button" class="tap-btn selected" data-value="快適">快適</button>
+                    <button type="button" class="tap-btn" data-value="普通">普通</button>
+                    <button type="button" class="tap-btn" data-value="不足">不足</button>
+                </div>
+                <input type="hidden" id="manualSleep" value="快適">
+
+                <div class="slider-label" style="margin-bottom: 8px; margin-top: 16px;">自覚疲労</div>
+                <div class="tap-grid" id="fatigueGrid">
+                    <button type="button" class="tap-btn selected" data-value="万全">万全</button>
+                    <button type="button" class="tap-btn" data-value="やや疲れ">やや疲れ</button>
+                    <button type="button" class="tap-btn" data-value="重い">重い</button>
+                </div>
+                <input type="hidden" id="manualFatigue" value="万全">
+            </div>
+
+            <!-- エビデンスカメラ撮影（乗務前/出発時のみ表示） -->
+            <div id="cameraGroup" class="card glass-panel">
+                <div class="section-title">
+                    <span>📸</span>エビデンス撮影（アルコール＆時計）
+                </div>
+                <div class="meta-row">
+                    <span>GPS現在地</span>
+                    <span class="meta-val" id="gpsCoords">取得中...</span>
+                </div>
+                <div class="meta-row" style="margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
+                    <span style="font-size: 11px; color: var(--text-secondary);">📍 位置情報 (デモ偽装 / プライバシー保護)</span>
+                    <select id="demoLocationSelect" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: var(--radius-sm); padding: 4px 8px; font-size: 11px; font-family: var(--font-sans); outline: none; cursor: pointer;">
+                        <option value="tokyo" style="background: #1e1e2e;">🏢 東京本社 (豊洲)</option>
+                        <option value="osaka" style="background: #1e1e2e;">🏯 大阪支店 (梅田)</option>
+                        <option value="morioka" style="background: #1e1e2e;">🌲 盛岡センター (岩手)</option>
+                        <option value="real" style="background: #1e1e2e;">🛰️ 実端末GPS (保護マスク表示)</option>
+                        <option value="real_unmasked" style="background: #1e1e2e;">🛰️ 実端末GPS (ガチ座標・提出用)</option>
+                    </select>
+                </div>
+                <div class="meta-row">
+                    <span>撮影時刻</span>
+                    <span class="meta-val" id="currentTime">-</span>
+                </div>
+
+                <div class="camera-container">
+                    <video id="video" class="camera-preview" autoplay playsinline muted></video>
+                    <canvas id="canvas" style="display: none;"></canvas>
+                    <img id="photo" style="display: none; width: 100%; height: 100%; object-fit: cover;" alt="Captured evidence">
+                    
+                    <div class="ocr-overlay" id="ocrOverlay">
+                        <div class="scan-box">
+                            <div class="scan-line"></div>
+                            <div class="scan-corner-bl"></div>
+                            <div class="scan-corner-br"></div>
+                        </div>
+                        <div class="ocr-prompt">チェッカーと時計を枠内に収めてください</div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                    <button type="button" id="cameraBtn" class="capture-btn" style="flex: 1; background: rgba(255,255,255,0.06); border: 1px solid var(--border-color); color: var(--text-primary); box-shadow: none; margin-bottom: 0;">
+                        📷 カメラ起動
+                    </button>
+                    <button type="button" id="cameraSwitchBtn" class="capture-btn" style="width: 50px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); color: var(--text-primary); box-shadow: none; margin-bottom: 0; padding: 0; display: none; justify-content: center; align-items: center;" title="カメラ切り替え">
+                        🔄
+                    </button>
+                </div>
+            </div>
+
+            <!-- 送信アクション -->
+            <button type="button" id="submitBtn" class="capture-btn">
+                <span>🚀</span> <span id="submitBtnText">運行開始チェックイン</span>
+            </button>
+        </form>
+
+        <!-- AIフィードバック（送信後表示） -->
+        <div class="feedback-box glass-panel" id="feedbackBox">
+            <div class="feedback-header">
+                <span id="feedbackIcon">🛡️</span>
+                <span id="feedbackTitle">AI判定完了 (イエロー)</span>
+            </div>
+            <div class="feedback-msg" id="feedbackMessage">
+                判定中...
+            </div>
+            <div style="margin-top: 16px; font-size: 11px; color: var(--text-muted); display: flex; justify-content: space-between;">
+                <span>OCR抽出値: <strong id="ocrValText">0.00 mg/L</strong></span>
+                <span>WBGT: <strong id="wbgtText">28.4℃</strong></span>
+            </div>
+        </div>
+        
+        <footer style="margin-top: 32px; text-align: center; font-size: 12px; color: var(--text-muted);">
+            © 2026 Agentic AI Hackathon MVP Project
+        </footer>
+    </div>
+
+    <!-- Fitbit OAuth風 認可同意画面モーダル -->
+    <div class="modal" id="fitbitOAuthModal">
+        <div class="card glass-panel modal-content" style="max-width: 420px; border-color: rgba(0, 176, 185, 0.3);">
+            <span class="modal-close" id="fitbitOAuthCloseBtn">&times;</span>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 32px; margin-bottom: 8px;">⚡</div>
+                <h3 style="font-family: var(--font-display); font-weight: 800; font-size: 20px; color: #00b0b9; margin-bottom: 6px;">Fitbit アプリ承認の要求</h3>
+                <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;"><strong>SafeDrive AI Agent</strong> があなたのFitbitアカウントデータへのアクセスを要求しています。</p>
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px; text-align: left;">
+                <p style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px;">許可する権限の選択:</p>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); cursor: pointer;">
+                        <input type="checkbox" checked disabled style="accent-color: #00b0b9;">
+                        <span>プロフィール情報 (読込)</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); cursor: pointer;">
+                        <input type="checkbox" id="fitbitPermSleep" checked style="accent-color: #00b0b9;">
+                        <span>睡眠データ (読込)</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); cursor: pointer;">
+                        <input type="checkbox" id="fitbitPermHrv" checked style="accent-color: #00b0b9;">
+                        <span>心拍数およびストレス指標 (読込)</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.4; margin-bottom: 20px; text-align: center;">
+                「許可して連携」をクリックすると、Fitbitの利用規約に従って、SafeDrive AI Agentへのデータ同期が開始されます。
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button type="button" id="fitbitOAuthDenyBtn" style="padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: rgba(255,255,255,0.02); color: var(--text-secondary); cursor: pointer; font-size: 13px; font-weight: 600; outline: none; border-color: rgba(255,255,255,0.08);">キャンセル</button>
+                <button type="button" id="fitbitOAuthAllowBtn" style="padding: 12px; border-radius: var(--radius-sm); border: none; background: #00b0b9; color: #fff; cursor: pointer; font-size: 13px; font-weight: 700; box-shadow: 0 4px 15px rgba(0, 176, 185, 0.3); outline: none;">許可して連携</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
